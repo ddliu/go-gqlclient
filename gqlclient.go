@@ -8,25 +8,25 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/ddliu/fractal"
 )
 
 func New(options Options) *Client {
 	return &Client{
-		options,
+		Options:    options,
+		HttpClient: &http.Client{},
 	}
 }
 
 type Options struct {
 	Endpoint string
 	Header   http.Header
-	Timeout  time.Duration
 }
 
 type Client struct {
-	Options Options
+	Options    Options
+	HttpClient *http.Client
 }
 
 type GraphqlError struct {
@@ -55,8 +55,7 @@ func (c *Client) Query(ctx context.Context, query string, variables interface{})
 		}
 	}
 
-	httpclient := &http.Client{Timeout: c.Options.Timeout}
-	response, err := httpclient.Do(req)
+	response, err := c.HttpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
